@@ -2,7 +2,7 @@
   <div class="container">
     <global-header :user="currentUser"></global-header>
     <column-list :list="list"></column-list>
-    <form>
+    <validate-form @form-submit="onFormSubmit">
       <div class="mb-3">
         <label class="form-label">邮箱地址</label>
         <validate-input
@@ -21,16 +21,20 @@
           placeholder="请输入密码"
         ></validate-input>
       </div>
-    </form>
+      <template #submit>
+        <span class="btn btn-danger">submit</span>
+      </template>
+    </validate-form>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import ColumnList, { ColumnProps } from '@/components/ColumnList.vue'
 import GlobalHeader, { UserProps } from '@/components/GlobalHeader.vue'
 import ValidateInput, { RulesProp } from '@/components/ValidateInput.vue'
+import ValidateForm from '@/components/ValidateForm.vue'
 
 const testData: ColumnProps[] = [
   {
@@ -67,36 +71,37 @@ const currentUser: UserProps = {
   name: 'lcl'
 }
 
-const emailReg = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
-
 export default defineComponent({
   name: 'App',
   components: {
     ColumnList,
     GlobalHeader,
-    ValidateInput
+    ValidateInput,
+    ValidateForm
   },
   setup() {
-    const emailVal = ref('')
+    const emailVal = ref('123@test.com')
     const emailRules: RulesProp = [
       { type: 'required', message: '电子邮箱地址不能为空' },
       { type: 'email', message: '请输入正确的电子邮箱格式' }
     ]
-    const passwordVal = ref('')
+    const passwordVal = ref('123')
     const passwordRules: RulesProp = [
       { type: 'required', message: '密码不能为空' }
     ]
+
+    const onFormSubmit = (result: boolean) => {
+      console.log(result)
+    }
     return {
       list: testData,
       currentUser,
       emailRules,
       emailVal,
       passwordRules,
-      passwordVal
+      passwordVal,
+      onFormSubmit
     }
   }
 })
 </script>
-
-<style>
-</style>
