@@ -10,5 +10,14 @@ module.exports = {
           return options
         })
     }
+  },
+  devServer: {
+    proxy: {
+      '/api': {
+        target: 'http://api.vikingship.xyz',
+        changeOrigin: true,
+        ws: true
+      }
+    }
   }
 }
