@@ -1,6 +1,11 @@
 import { createStore, Commit } from 'vuex'
 import axios from 'axios'
 
+export interface PayloadProps {
+  email: string;
+  password: string;
+}
+
 export interface UserProps {
   isLogin: boolean;
   email?: string;
@@ -32,7 +37,13 @@ export interface PostProps {
   column: string;
 }
 
+export interface GlobalErrorProps {
+  status: boolean;
+  message?: string;
+}
+
 export interface GlobalDataProps {
+  error: GlobalErrorProps;
   token: string;
   loading: boolean;
   columns: ColumnProps[];
@@ -45,7 +56,7 @@ const getAndCommit = async (url: string, mutationName: string, commit: Commit) =
   commit(mutationName, data)
 }
 
-const postAndCommit = async (url: string, mutationName: string, commit: Commit, payload: any) => {
+const postAndCommit = async (url: string, mutationName: string, commit: Commit, payload: PayloadProps) => {
   const { data } = await axios.post(url, payload)
   commit(mutationName, data)
   return data
@@ -53,6 +64,7 @@ const postAndCommit = async (url: string, mutationName: string, commit: Commit, 
 
 const store = createStore<GlobalDataProps>({
   state: {
+    error: { status: false },
     token: localStorage.getItem('token') || '',
     loading: false,
     columns: [],
@@ -87,6 +99,15 @@ const store = createStore<GlobalDataProps>({
     },
     fetchCurrentUser(state, rawData) {
       state.user = { isLogin: true, ...rawData.data }
+    },
+    logout(state) {
+      state.token = ''
+      state.user = { isLogin: false }
+      localStorage.removeItem('token')
+      delete axios.defaults.headers.common.Authorization
+    },
+    setError(state, e: GlobalErrorProps) {
+      state.error = e
     }
   },
   actions: {
