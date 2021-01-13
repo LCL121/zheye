@@ -1,22 +1,32 @@
 import { createStore, Commit } from 'vuex'
-import axios from 'axios'
+import axios, { AxiosRequestConfig } from 'axios'
+import { arrToObj, objToArr } from '@/utils/helper'
 
 export interface PayloadProps {
   email: string;
   password: string;
 }
 
+export interface ResponseType<P = {}> {
+  code: number;
+  msg: string;
+  data: P;
+}
+
 export interface UserProps {
   isLogin: boolean;
-  email?: string;
   nickName?: string;
   _id?: string;
   column?: string;
+  email?: string;
+  avatar?: ImageProps;
+  description?: string;
 }
 
-interface ImageProps {
+export interface ImageProps {
   _id?: string;
   url?: string;
+  fitUrl?: string;
   createdAt?: string;
 }
 
@@ -27,14 +37,8 @@ export interface ColumnProps {
   description: string;
 }
 
-export interface PostProps {
-  _id: number;
-  title: string;
-  excerpt?: string;
-  content?: string;
-  image?: ImageProps;
-  createdAt: string;
-  column: string;
+interface ListProps<P> {
+  [id: string]: P;
 }
 
 export interface GlobalErrorProps {
@@ -42,23 +46,47 @@ export interface GlobalErrorProps {
   message?: string;
 }
 
+export interface PostProps {
+  _id?: string;
+  title: string;
+  excerpt?: string;
+  content?: string;
+  image?: ImageProps | string;
+  createdAt?: string;
+  column: string;
+  author?: string | UserProps;
+  isHTML?: boolean;
+}
+
 export interface GlobalDataProps {
   error: GlobalErrorProps;
   token: string;
   loading: boolean;
-  columns: ColumnProps[];
-  posts: PostProps[];
+  columns: ListProps<ColumnProps>;
+  posts: ListProps<PostProps>;
   user: UserProps;
 }
 
 const getAndCommit = async (url: string, mutationName: string, commit: Commit) => {
   const { data } = await axios.get(url)
   commit(mutationName, data)
+  return data
 }
 
-const postAndCommit = async (url: string, mutationName: string, commit: Commit, payload: PayloadProps) => {
+const postAndCommit = async (url: string, mutationName: string, commit: Commit, payload: object) => {
   const { data } = await axios.post(url, payload)
   commit(mutationName, data)
+  return data
+}
+
+// 把POST和GET方法进行合并
+const asyncAndCommit = async (url: string, mutationName: string, commit: Commit, config: AxiosRequestConfig = { method: 'GET' }, extraData?: any) => {
+  const { data } = await axios(url, config)
+  if (extraData) {
+    commit(mutationName, { data, extraData })
+  } else {
+    commit(mutationName, data)
+  }
   return data
 }
 
@@ -67,78 +95,103 @@ const store = createStore<GlobalDataProps>({
     error: { status: false },
     token: localStorage.getItem('token') || '',
     loading: false,
-    columns: [],
-    posts: [],
+    columns: {},
+    posts: {},
     user: { isLogin: false }
-    // user: { isLogin: true, name: 'lcl', columnId: 1 }
   },
   mutations: {
-    // login(state) {
-    //   state.user = { ...state.user, isLogin: true, name: 'lcl', columnId: 1 }
-    // },
-    createPost(state, newPost) {
-      state.posts.push(newPost)
+    createPost (state, newPost) {
+      state.posts[newPost._id] = newPost
     },
-    fetchColumns(state, rawData) {
-      state.columns = rawData.data.list
+    deletePost (state, { data }) {
+      delete state.posts[data._id]
     },
-    fetchColumn(state, rawData) {
-      state.columns = [rawData.data]
+    fetchColumns (state, rawData) {
+      state.columns = arrToObj(rawData.data.list)
     },
-    fetchPosts(state, rawData) {
-      state.posts = rawData.data.list
+    fetchColumn (state, rawData) {
+      state.columns[rawData.data._id] = rawData.data
     },
-    setLoading(state, status) {
+    fetchPosts (state, rawData) {
+      state.posts = arrToObj(rawData.data.list)
+    },
+    fetchPost (state, rawData) {
+      state.posts[rawData.data._id] = rawData.data
+    },
+    updatePost (state, { data }) {
+      state.posts[data._id] = data
+    },
+    setLoading (state, status) {
       state.loading = status
     },
-    login(state, rawData) {
-      const { token } = rawData.data
+    setError (state, e: GlobalErrorProps) {
+      state.error = e
+    },
+    fetchCurrentUser (state, rowData) {
+      state.user = { isLogin: true, ...rowData.data }
+    },
+    login (state, rowData) {
+      const { token } = rowData.data
       state.token = token
       localStorage.setItem('token', token)
       axios.defaults.headers.common.Authorization = `Bearer ${token}`
     },
-    fetchCurrentUser(state, rawData) {
-      state.user = { isLogin: true, ...rawData.data }
-    },
-    logout(state) {
-      state.token = ''
+    logout (state) {
       state.user = { isLogin: false }
       localStorage.removeItem('token')
+      state.token = ''
       delete axios.defaults.headers.common.Authorization
-    },
-    setError(state, e: GlobalErrorProps) {
-      state.error = e
     }
   },
   actions: {
-    fetchColumns({ commit }) {
-      getAndCommit('/api/columns', 'fetchColumns', commit)
+    fetchColumns ({ commit }) {
+      return getAndCommit('/api/columns', 'fetchColumns', commit)
     },
-    fetchColumn({ commit }, cid) {
-      getAndCommit(`/api/columns/${cid}`, 'fetchColumn', commit)
+    fetchColumn ({ commit }, cid) {
+      return getAndCommit(`/api/columns/${cid}`, 'fetchColumn', commit)
     },
-    fetchPosts({ commit }, cid) {
-      getAndCommit(`/api/columns/${cid}/posts`, 'fetchPosts', commit)
+    fetchPosts ({ commit }, cid) {
+      return getAndCommit(`/api/columns/${cid}/posts`, 'fetchPosts', commit)
     },
-    login({ commit }, payload) {
-      return postAndCommit('/api/user/login', 'login', commit, payload)
+    fetchPost ({ commit }, id) {
+      return getAndCommit(`/api/posts/${id}`, 'fetchPost', commit)
     },
-    fetchCurrentUser({ commit }) {
-      getAndCommit('/api/user/current', 'fetchCurrentUser', commit)
+    updatePost ({ commit }, { id, payload }) {
+      return asyncAndCommit(`/api/posts/${id}`, 'updatePost', commit, {
+        method: 'patch',
+        data: payload
+      })
     },
-    loginAndFetch({ dispatch }, loginData) {
-      return dispatch('login', loginData)
-        .then(() => {
-          return dispatch('fetchCurrentUser')
-        })
+    fetchCurrentUser ({ commit }) {
+      return getAndCommit('/api/user/current', 'fetchCurrentUser', commit)
+    },
+    login ({ commit }, payload) {
+      return postAndCommit('/api/user/login', 'login', commit, { ...payload })
+    },
+    createPost ({ commit }, payload) {
+      return postAndCommit('/api/posts', 'createPost', commit, { ...payload })
+    },
+    deletePost ({ commit }, id) {
+      return asyncAndCommit(`/api/posts/${id}`, 'deletePost', commit, { method: 'delete' })
+    },
+    loginAndFetch ({ dispatch }, loginData) {
+      return dispatch('login', loginData).then(() => {
+        return dispatch('fetchCurrentUser')
+      })
     }
   },
   getters: {
-    getColumnById: (state) => (id: string) => {
-      return state.columns.find(c => c._id === id)
+    getColumns: (state) => {
+      return objToArr(state.columns)
     },
-    getPostsById: (state) => (cid: string) => {
-      return state.posts.filter(post => post.column === cid)
+    getColumnById: (state) => (id: string) => {
+      return state.columns[id]
+    },
+    getPostsByCid: (state) => (cid: string) => {
+      return objToArr(state.posts).filter(post => post.column === cid)
+    },
+    getCurrentPost: (state) => (id: string) => {
+      return state.posts[id]
     }
   }
 })

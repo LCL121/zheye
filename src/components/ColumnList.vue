@@ -1,21 +1,23 @@
 <template>
   <div class="row">
     <div
-      v-for="column in columnList"
+      v-for="column in columnlist"
       :key="column._id"
-      class="col-4 mb-4"
+      class="col-4 mb-3"
     >
       <div class="card h-100 shadow-sm">
         <div class="card-body text-center">
           <img
             :src="column.avatar && column.avatar.url"
-            :alt="column.title"
-            class="rounded-circle border border-light my-3"
-          >
+            class="rounded-circle border border-light my-4"
+            alt="..."
+          />
           <h5 class="card-title">{{column.title}}</h5>
-          <p class="card-text text-start">{{column.description}}</p>
+          <p class="card-text text-left">
+            {{ column.description }}
+          </p>
           <router-link
-            :to="`/column/${column._id}`"
+            :to="{ name: 'column', params: { id: column._id } }"
             class="btn btn-outline-primary"
           >进入专栏</router-link>
         </div>
@@ -37,11 +39,11 @@ export default defineComponent({
     }
   },
   setup(props) {
-    const columnList = computed(() => {
+    const columnlist = computed(() => {
       return props.list.map(column => {
         if (!column.avatar) {
           column.avatar = {
-            url: require('@/assets/column.jpg')
+            url: require('@/assets/avator.jpg')
           }
         } else {
           column.avatar.url = column.avatar.url + '?x-oss-process=image/resize,m_pad,h_50,w_50'
@@ -49,9 +51,8 @@ export default defineComponent({
         return column
       })
     })
-    return {
-      columnList
-    }
+
+    return { columnlist }
   }
 })
 </script>
