@@ -4,8 +4,10 @@ interface CheckCondition {
   format?: string[];
   size?: number;
 }
+
 type ErrorType = 'size' | 'format' | null
-export function beforeUploadCheck (file: File, condition: CheckCondition) {
+
+export function beforeUploadCheck(file: File, condition: CheckCondition) {
   const { format, size } = condition
   const isValidFormat = format ? format.includes(file.type) : true
   const isValidSize = size ? (file.size / 1024 / 1024 < size) : true
@@ -21,7 +23,8 @@ export function beforeUploadCheck (file: File, condition: CheckCondition) {
     error
   }
 }
-export function generateFitUrl (data: ImageProps, width: number, height: number, format = ['m_pad']) {
+
+export function generateFitUrl(data: ImageProps, width: number, height: number, format = ['m_pad']) {
   if (data && data.url) {
     const formatStr = format.reduce((prev, current) => {
       return current + ',' + prev
@@ -29,7 +32,8 @@ export function generateFitUrl (data: ImageProps, width: number, height: number,
     data.fitUrl = data.url + `?x-oss-process=image/resize,${formatStr}h_${height},w_${width}`
   }
 }
-export function addColumnAvatar (data: ColumnProps | UserProps, width: number, height: number) {
+
+export function addColumnAvatar(data: ColumnProps | UserProps, width: number, height: number) {
   if (data.avatar) {
     generateFitUrl(data.avatar, width, height)
   } else {
@@ -39,10 +43,7 @@ export function addColumnAvatar (data: ColumnProps | UserProps, width: number, h
     }
   }
 }
-interface TestProps {
-  _id: string;
-  name: string;
-}
+
 export const arrToObj = <T extends { _id?: string }>(arr: Array<T>) => {
   return arr.reduce((prev, current) => {
     if (current._id) {
@@ -51,6 +52,7 @@ export const arrToObj = <T extends { _id?: string }>(arr: Array<T>) => {
     return prev
   }, {} as { [key: string]: T })
 }
-export const objToArr = <T>(obj: {[key: string]: T}) => {
+
+export const objToArr = <T>(obj: { [key: string]: T }) => {
   return Object.keys(obj).map(key => obj[key])
 }
