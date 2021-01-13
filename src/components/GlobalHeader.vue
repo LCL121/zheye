@@ -1,6 +1,6 @@
 <template>
   <nav class="navbar navbar-dark bg-primary justify-content-between mb-4 px-4">
-    <router-link class="navbar-brand" to="/">者也专栏</router-link >
+    <router-link class="navbar-brand" to="/">LCL专栏</router-link >
     <ul v-if="!user.isLogin" class="list-inline mb-0">
       <li class="list-inline-item"><a href="/login" class="btn btn-outline-light my-2">登录</a></li>
       <li class="list-inline-item"><a href="/signup" class="btn btn-outline-light my-2">注册</a></li>
@@ -18,7 +18,7 @@
             <router-link :to="`/column/${user.column}`" class="dropdown-item">我的专栏</router-link>
           </dropdown-item>
           <dropdown-item>
-            <a @click="handleLogout" class="dropdown-item">退出登录</a>
+            <a @click.prevent="handleLogout" class="dropdown-item">退出登录</a>
           </dropdown-item>
         </Dropdown>
       </li>
@@ -28,9 +28,12 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import Dropdown from '@/components/Dropdown.vue'
 import DropdownItem from '@/components/DropdownItem.vue'
 import { UserProps } from '@/store'
+
 export default defineComponent({
   name: 'GlobalHeader',
   props: {
@@ -39,14 +42,18 @@ export default defineComponent({
       required: true
     }
   },
-  emits: ['handle-logout'],
   components: {
     Dropdown,
     DropdownItem
   },
-  setup (props, context) {
+  setup () {
+    const store = useStore()
+    const router = useRouter()
+
     const handleLogout = () => {
-      context.emit('handle-logout')
+      console.log('handleLogout')
+      store.commit('logout')
+      router.push({ name: 'home' })
     }
     return {
       handleLogout

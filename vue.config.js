@@ -1,5 +1,12 @@
 module.exports = {
   chainWebpack: (config) => {
+    config
+      .plugin('html')
+      .tap((args) => {
+        args[0].title = 'LCL专栏'
+        return args
+      })
+
     if (process.env.NODE_ENV === 'development') {
       config.module
         .rule('eslint')

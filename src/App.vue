@@ -6,7 +6,7 @@
     <footer class="text-center py-4 text-secondary bg-light mt-6">
       <small>
         <ul class="list-inline mb-0">
-          <li class="list-inline-item">© 者也专栏</li>
+          <li class="list-inline-item">© LCL专栏</li>
           <li class="list-inline-item">课程</li>
           <li class="list-inline-item">文档</li>
           <li class="list-inline-item">联系</li>
@@ -18,10 +18,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, onMounted, watch } from 'vue'
+import { defineComponent, computed, watch } from 'vue'
 import { useStore } from 'vuex'
 import 'bootstrap/dist/css/bootstrap.min.css'
-import axios from 'axios'
 import GlobalHeader from '@/components/GlobalHeader.vue'
 import Loader from '@/components/Loader.vue'
 import { GlobalDataProps } from '@/store'
@@ -37,7 +36,6 @@ export default defineComponent({
     const store = useStore<GlobalDataProps>()
     const currentUser = computed(() => store.state.user)
     const isLoading = computed(() => store.state.loading)
-    const token = computed(() => store.state.token)
     const error = computed(() => store.state.error)
 
     watch(() => error.value.status, () => {

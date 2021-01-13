@@ -1,6 +1,6 @@
 <template>
   <div class="signup-page mx-auto p-3 w-330">
-    <h5 class="my-4 text-center">注册者也账户</h5>
+    <h5 class="my-4 text-center">注册LCL专栏账户</h5>
     <validate-form @form-submit="onFormSubmit">
       <div class="mb-3">
         <label class="form-label">邮箱地址</label>
@@ -38,10 +38,10 @@
           v-model="formData.repeatPassword"
         ></validate-input>
         <div class="form-text">
-          <a
-            href="/login"
+          <router-link
+            to="/login"
             class=""
-          >已经有账户了？去登录</a>
+          >已经有账户了？去登录</router-link>
         </div>
       </div>
       <template v-slot:submit>

@@ -12,7 +12,10 @@
       <h2>点击上传头图</h2>
       <template #loading>
         <div class="d-flex">
-          <div class="spinner-border text-secondary" role="status">
+          <div
+            class="spinner-border text-secondary"
+            role="status"
+          >
             <span class="visually-hidden">Loading...</span>
           </div>
           <h2>正在上传</h2>
@@ -62,6 +65,7 @@ import ValidateInput, { RulesProp } from '@/components/ValidateInput.vue'
 import Uploader from '@/components/Uploader.vue'
 import { beforeUploadCheck } from '@/utils/helper'
 import createMessage from '@/components/createMessage'
+
 export default defineComponent({
   name: 'CreatePost',
   components: {
@@ -69,7 +73,7 @@ export default defineComponent({
     ValidateInput,
     Uploader
   },
-  setup () {
+  setup() {
     const uploadedData = ref()
     const router = useRouter()
     const route = useRoute()
@@ -88,10 +92,10 @@ export default defineComponent({
       if (isEditMode) {
         store.dispatch('fetchPost', route.query.id).then((rawData: ResponseType<PostProps>) => {
           const currentPost = rawData.data
+          console.log(currentPost)
           if (currentPost.image) {
             uploadedData.value = { data: currentPost.image }
           }
-          console.log('uploadedData--->', uploadedData.value)
           titleVal.value = currentPost.title
           contentVal.value = currentPost.content || ''
         })
@@ -103,8 +107,7 @@ export default defineComponent({
         imageId = rawData.data._id
       }
     }
-    const handleFileFail = (error: any) => {
-      console.error(error)
+    const handleFileFail = () => {
       createMessage('上传失败', 'error')
     }
     const onFormSubmit = (result: boolean) => {
@@ -165,7 +168,7 @@ export default defineComponent({
   cursor: pointer;
   overflow: hidden;
 }
-.create-post-page .file-upload-container img{
+.create-post-page .file-upload-container img {
   height: 100%;
   width: 100%;
   object-fit: cover;

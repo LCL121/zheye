@@ -1,7 +1,7 @@
 <template>
   <div class="row">
     <div
-      v-for="column in columnlist"
+      v-for="column in columnList"
       :key="column._id"
       class="col-4 mb-3"
     >
@@ -39,7 +39,7 @@ export default defineComponent({
     }
   },
   setup(props) {
-    const columnlist = computed(() => {
+    const columnList = computed(() => {
       return props.list.map(column => {
         if (!column.avatar) {
           column.avatar = {
@@ -52,7 +52,7 @@ export default defineComponent({
       })
     })
 
-    return { columnlist }
+    return { columnList }
   }
 })
 </script>

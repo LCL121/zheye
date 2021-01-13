@@ -26,6 +26,7 @@ import { useRoute } from 'vue-router'
 import { useStore } from 'vuex'
 import { GlobalDataProps, ColumnProps } from '@/store'
 import PostList from '@/components/PostList.vue'
+
 export default defineComponent({
   name: 'ColumnDetail',
   components: {
